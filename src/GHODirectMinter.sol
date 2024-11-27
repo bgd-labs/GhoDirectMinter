@@ -7,26 +7,29 @@ import {Initializable} from "openzeppelin-contracts-upgradeable/contracts/proxy/
 import {IERC20} from "solidity-utils/contracts/oz-common/interfaces/IERC20.sol";
 import {SafeERC20} from "solidity-utils/contracts/oz-common/SafeERC20.sol";
 import {IGhoToken} from "./interfaces/IGhoToken.sol";
+import {IGHODirectMinter} from "./interfaces/IGHODirectMinter.sol";
 
 /**
  * @title GHODirectMinter
  * @notice The GHODirectMinter is a GHO facilitator, that can inject(mint) and remove(burn) GHO from an AAVE pool that has GHO listed as a non-custom AToken.
  * @author BGD Labs @bgdlabs
  */
-contract GHODirectMinter is Initializable, OwnableUpgradeable {
-    error InvalidAToken();
-
+contract GHODirectMinter is Initializable, OwnableUpgradeable, IGHODirectMinter {
     using SafeERC20 for IERC20;
 
+    // @inheritdoc IGHODirectMinter
     IPool public immutable POOL;
+    // @inheritdoc IGHODirectMinter
     address public immutable COLLECTOR;
-    IGhoToken public immutable GHO;
+    // @inheritdoc IGHODirectMinter
+    address public immutable GHO;
+    // @inheritdoc IGHODirectMinter
     address public immutable GHO_A_TOKEN;
 
     constructor(IPool pool, address collector, address gho) {
         POOL = pool;
         COLLECTOR = collector;
-        GHO = IGhoToken(gho);
+        GHO = gho;
         DataTypes.ReserveDataLegacy memory reserveData = pool.getReserveData(gho);
         require(reserveData.aTokenAddress != address(0), InvalidAToken());
         GHO_A_TOKEN = reserveData.aTokenAddress;
@@ -37,31 +40,22 @@ contract GHODirectMinter is Initializable, OwnableUpgradeable {
         __Ownable_init(owner);
     }
 
-    /**
-     * @dev Mints GHO and supplies it to the pool
-     * @param amount Amount of GHO to mint and supply to the pool
-     */
+    // @inheritdoc IGHODirectMinter
     function mintAndSupply(uint256 amount) external onlyOwner {
-        GHO.mint(address(this), amount);
-        IERC20(address(GHO)).forceApprove(address(POOL), amount);
-        POOL.supply(address(GHO), amount, address(this), 0);
+        IGhoToken(GHO).mint(address(this), amount);
+        IERC20(GHO).forceApprove(address(POOL), amount);
+        POOL.supply(GHO, amount, address(this), 0);
     }
 
-    /**
-     * @dev withdraws GHO from the pool and burns it
-     * @param amount Amount of GHO to withdraw and burn from the pool
-     */
+    // @inheritdoc IGHODirectMinter
     function withdrawAndBurn(uint256 amount) external onlyOwner {
-        uint256 amountWithdrawn = POOL.withdraw(address(GHO), amount, address(this));
-
-        GHO.burn(amountWithdrawn);
+        uint256 amountWithdrawn = POOL.withdraw(GHO, amount, address(this));
+        IGhoToken(GHO).burn(amountWithdrawn);
     }
 
-    /**
-     * @dev Transfers excess GHO to the treasury
-     */
+    // @inheritdoc IGHODirectMinter
     function transferExcessToTreasury() external {
-        (, uint256 capacityUtilization) = GHO.getFacilitatorBucket(address(this));
+        (, uint256 capacityUtilization) = IGhoToken(GHO).getFacilitatorBucket(address(this));
         uint256 balanceIncrease = IERC20(GHO_A_TOKEN).balanceOf(address(this)) - capacityUtilization;
         IERC20(GHO_A_TOKEN).transfer(address(COLLECTOR), balanceIncrease);
     }
