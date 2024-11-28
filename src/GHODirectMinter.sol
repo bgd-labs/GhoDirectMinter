@@ -11,14 +11,14 @@ import {SafeERC20} from "solidity-utils/contracts/oz-common/SafeERC20.sol";
 import {UpgradeableOwnableWithGuardian} from
   "solidity-utils/contracts/access-control/UpgradeableOwnableWithGuardian.sol";
 import {IGhoToken} from "./interfaces/IGhoToken.sol";
-import {IGHODirectMinter} from "./interfaces/IGHODirectMinter.sol";
+import {IGhoDirectMinter} from "./interfaces/IGhoDirectMinter.sol";
 
 /**
- * @title GHODirectMinter
+ * @title GhoDirectMinter
  * @notice The GHODirectMinter is a GHO facilitator, that can inject(mint) and remove(burn) GHO from an AAVE pool that has GHO listed as a non-custom AToken.
  * @author BGD Labs @bgdlabs
  */
-contract GHODirectMinter is Initializable, UpgradeableOwnableWithGuardian, IGHODirectMinter {
+contract GhoDirectMinter is Initializable, UpgradeableOwnableWithGuardian, IGhoDirectMinter {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
   using SafeERC20 for IERC20;
 

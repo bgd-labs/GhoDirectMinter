@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import {IPool} from "aave-v3-origin/contracts/interfaces/IPool.sol";
 import {IPoolConfigurator} from "aave-v3-origin/contracts/interfaces/IPoolConfigurator.sol";
 
-interface IGHODirectMinter {
+interface IGhoDirectMinter {
   error InvalidAToken();
 
   /**

@@ -16,14 +16,14 @@ import {UpgradeableOwnableWithGuardian} from
 import {GovV3Helpers} from "aave-helpers/src/GovV3Helpers.sol";
 import {IPool, DataTypes} from "aave-v3-origin/contracts/interfaces/IPool.sol";
 import {ReserveConfiguration} from "aave-v3-origin/contracts/protocol/libraries/configuration/ReserveConfiguration.sol";
-import {GHODirectMinter} from "../src/GHODirectMinter.sol";
+import {GhoDirectMinter} from "../src/GhoDirectMinter.sol";
 import {LidoGHOListing} from "../src/proposals/LidoGHOListing.sol";
 import {IGhoToken} from "../src/interfaces/IGhoToken.sol";
 
 contract Lido_GHODirectMinter_Test is Test {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
 
-  GHODirectMinter internal minter;
+  GhoDirectMinter internal minter;
   IERC20 internal ghoAToken;
   LidoGHOListing internal proposal;
 
@@ -38,7 +38,7 @@ contract Lido_GHODirectMinter_Test is Test {
     GovV3Helpers.executePayload(vm, address(proposal));
 
     address[] memory facilitators = IGhoToken(AaveV3EthereumAssets.GHO_UNDERLYING).getFacilitatorsList();
-    minter = GHODirectMinter(facilitators[facilitators.length - 1]);
+    minter = GhoDirectMinter(facilitators[facilitators.length - 1]);
     ghoAToken = IERC20(minter.GHO_A_TOKEN());
 
     // burn all supply to start with a clean state on the tests
