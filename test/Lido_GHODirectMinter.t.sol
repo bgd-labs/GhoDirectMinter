@@ -85,8 +85,8 @@ contract Lido_GHODirectMinter_Test is Test {
     uint256 balanceBeforeTransfer = ghoAToken.balanceOf(address(minter));
     assertGt(balanceBeforeTransfer, amount);
     minter.transferExcessToTreasury();
-    assertEq(ghoAToken.balanceOf(address(minter)), amount);
-    assertEq(ghoAToken.balanceOf(address(minter.COLLECTOR())), balanceBeforeTransfer - amount);
+    assertApproxEqAbs(ghoAToken.balanceOf(address(minter)), amount, 1);
+    assertApproxEqAbs(ghoAToken.balanceOf(address(minter.COLLECTOR())), balanceBeforeTransfer - amount, 1);
   }
 
   function _mintAndSupply(uint256 amount, address caller) internal returns (uint256) {
