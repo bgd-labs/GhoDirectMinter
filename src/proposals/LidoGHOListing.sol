@@ -28,7 +28,6 @@ contract LidoGHOListing is AaveV3PayloadEthereumLido {
   using SafeERC20 for IERC20;
 
   uint128 public constant GHO_MINT_AMOUNT = 10_000_000e18;
-  uint256 public constant GHO_BORROW_CAP = 10_000_000e18;
   address public immutable COUNCIL;
 
   constructor(address council) {
