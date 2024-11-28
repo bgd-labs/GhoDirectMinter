@@ -10,7 +10,7 @@ abstract contract RiskCouncilControlled {
   error InvalidZeroAddress();
   error InvalidCaller();
 
-  address internal immutable RISK_COUNCIL;
+  address public immutable RISK_COUNCIL;
 
   /**
    * @dev Constructor
