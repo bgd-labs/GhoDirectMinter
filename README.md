@@ -1,5 +1,7 @@
 ## GhoDirectMinter
 
+![header](./header.png)
+
 The GHO direct minter is a generic facilitator that can inject GHO into an aave pool.
 
 ### Summary
