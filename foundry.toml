@@ -32,6 +32,5 @@ zksync = "${RPC_ZKSYNC}"
 [etherscan]
 mainnet = { key = "${ETHERSCAN_API_KEY_MAINNET}", chain = 1 }
 
-
 [fmt]
 tab_width = 2

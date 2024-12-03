@@ -13,10 +13,11 @@ import {
   ITransparentProxyFactory,
   ProxyAdmin
 } from "solidity-utils/contracts/transparent-proxy/interfaces/ITransparentProxyFactory.sol";
+import {IAccessControl} from "openzeppelin-contracts/contracts/access/IAccessControl.sol";
 
 import {IGhoToken} from "../interfaces/IGhoToken.sol";
 import {IGhoBucketSteward} from "../interfaces/IGhoBucketSteward.sol";
-import {GHODirectMinter} from "../GHODirectMinter.sol";
+import {GhoDirectMinter} from "../GhoDirectMinter.sol";
 
 /**
  * @title GHO listing on Lido pool
@@ -36,17 +37,22 @@ contract LidoGHOListing is AaveV3PayloadEthereumLido {
 
   function _postExecute() internal override {
     address vaultImpl = address(
-      new GHODirectMinter(
-        AaveV3EthereumLido.POOL, address(AaveV3EthereumLido.COLLECTOR), AaveV3EthereumAssets.GHO_UNDERLYING, COUNCIL
+      new GhoDirectMinter(
+        AaveV3EthereumLido.POOL_ADDRESSES_PROVIDER,
+        address(AaveV3EthereumLido.COLLECTOR),
+        AaveV3EthereumAssets.GHO_UNDERLYING
       )
     );
     address vault = ITransparentProxyFactory(MiscEthereum.TRANSPARENT_PROXY_FACTORY).create(
       vaultImpl,
       ProxyAdmin(MiscEthereum.PROXY_ADMIN),
-      abi.encodeWithSelector(GHODirectMinter.initialize.selector, address(this))
+      abi.encodeWithSelector(GhoDirectMinter.initialize.selector, address(this), COUNCIL)
     );
-    IGhoToken(AaveV3EthereumAssets.GHO_UNDERLYING).addFacilitator(vault, "LidoGHODirectMinter", GHO_MINT_AMOUNT);
-    GHODirectMinter(vault).mintAndSupply(GHO_MINT_AMOUNT);
+    IAccessControl(address(AaveV3EthereumLido.ACL_MANAGER)).grantRole(
+      AaveV3EthereumLido.ACL_MANAGER.RISK_ADMIN_ROLE(), address(vault)
+    );
+    IGhoToken(AaveV3EthereumAssets.GHO_UNDERLYING).addFacilitator(vault, "LidoGhoDirectMinter", GHO_MINT_AMOUNT);
+    GhoDirectMinter(vault).mintAndSupply(GHO_MINT_AMOUNT);
 
     // allow risk council to control the bucket capacity
     address[] memory vaults = new address[](1);

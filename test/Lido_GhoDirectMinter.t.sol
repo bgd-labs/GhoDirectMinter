@@ -11,15 +11,19 @@ import {
   ITransparentProxyFactory,
   ProxyAdmin
 } from "solidity-utils/contracts/transparent-proxy/interfaces/ITransparentProxyFactory.sol";
+import {UpgradeableOwnableWithGuardian} from
+  "solidity-utils/contracts/access-control/UpgradeableOwnableWithGuardian.sol";
 import {GovV3Helpers} from "aave-helpers/src/GovV3Helpers.sol";
 import {IPool, DataTypes} from "aave-v3-origin/contracts/interfaces/IPool.sol";
-import {GHODirectMinter} from "../src/GHODirectMinter.sol";
-import {RiskCouncilControlled} from "../src/RiskCouncilControlled.sol";
+import {ReserveConfiguration} from "aave-v3-origin/contracts/protocol/libraries/configuration/ReserveConfiguration.sol";
+import {GhoDirectMinter} from "../src/GhoDirectMinter.sol";
 import {LidoGHOListing} from "../src/proposals/LidoGHOListing.sol";
 import {IGhoToken} from "../src/interfaces/IGhoToken.sol";
 
 contract Lido_GHODirectMinter_Test is Test {
-  GHODirectMinter internal minter;
+  using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
+
+  GhoDirectMinter internal minter;
   IERC20 internal ghoAToken;
   LidoGHOListing internal proposal;
 
@@ -34,7 +38,7 @@ contract Lido_GHODirectMinter_Test is Test {
     GovV3Helpers.executePayload(vm, address(proposal));
 
     address[] memory facilitators = IGhoToken(AaveV3EthereumAssets.GHO_UNDERLYING).getFacilitatorsList();
-    minter = GHODirectMinter(facilitators[facilitators.length - 1]);
+    minter = GhoDirectMinter(facilitators[facilitators.length - 1]);
     ghoAToken = IERC20(minter.GHO_A_TOKEN());
 
     // burn all supply to start with a clean state on the tests
@@ -54,7 +58,9 @@ contract Lido_GHODirectMinter_Test is Test {
   }
 
   function test_mintAndSupply_rando() external {
-    vm.expectRevert(RiskCouncilControlled.InvalidCaller.selector);
+    vm.expectRevert(
+      abi.encodeWithSelector(UpgradeableOwnableWithGuardian.OnlyGuardianOrOwnerInvalidCaller.selector, address(this))
+    );
     minter.mintAndSupply(100);
   }
 
@@ -67,7 +73,9 @@ contract Lido_GHODirectMinter_Test is Test {
   }
 
   function test_withdrawAndBurn_rando() external {
-    vm.expectRevert(RiskCouncilControlled.InvalidCaller.selector);
+    vm.expectRevert(
+      abi.encodeWithSelector(UpgradeableOwnableWithGuardian.OnlyGuardianOrOwnerInvalidCaller.selector, address(this))
+    );
     minter.withdrawAndBurn(100);
   }
 
@@ -91,10 +99,15 @@ contract Lido_GHODirectMinter_Test is Test {
 
   function _mintAndSupply(uint256 amount, address caller) internal returns (uint256) {
     amount = bound(amount, 1, proposal.GHO_MINT_AMOUNT());
+    DataTypes.ReserveConfigurationMap memory configurationBefore =
+      AaveV3EthereumLido.POOL.getConfiguration(AaveV3EthereumAssets.GHO_UNDERLYING);
     vm.prank(caller);
     minter.mintAndSupply(amount);
+    DataTypes.ReserveConfigurationMap memory configurationAfter =
+      AaveV3EthereumLido.POOL.getConfiguration(AaveV3EthereumAssets.GHO_UNDERLYING);
     assertEq(IERC20(ghoAToken).balanceOf(address(minter)), amount);
     assertEq(ghoAToken.totalSupply(), amount);
+    assertEq(configurationBefore.getSupplyCap(), configurationAfter.getSupplyCap());
     return amount;
   }
 

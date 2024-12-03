@@ -2,24 +2,30 @@
 pragma solidity ^0.8.0;
 
 import {IPool, DataTypes} from "aave-v3-origin/contracts/interfaces/IPool.sol";
-import {OwnableUpgradeable} from "openzeppelin-contracts-upgradeable/contracts/access/OwnableUpgradeable.sol";
+import {IPoolAddressesProvider} from "aave-v3-origin/contracts/interfaces/IPoolAddressesProvider.sol";
+import {IPoolConfigurator} from "aave-v3-origin/contracts/interfaces/IPoolConfigurator.sol";
+import {ReserveConfiguration} from "aave-v3-origin/contracts/protocol/libraries/configuration/ReserveConfiguration.sol";
 import {Initializable} from "openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol";
 import {IERC20} from "solidity-utils/contracts/oz-common/interfaces/IERC20.sol";
 import {SafeERC20} from "solidity-utils/contracts/oz-common/SafeERC20.sol";
+import {UpgradeableOwnableWithGuardian} from
+  "solidity-utils/contracts/access-control/UpgradeableOwnableWithGuardian.sol";
 import {IGhoToken} from "./interfaces/IGhoToken.sol";
-import {IGHODirectMinter} from "./interfaces/IGHODirectMinter.sol";
-import {RiskCouncilControlled} from "./RiskCouncilControlled.sol";
+import {IGhoDirectMinter} from "./interfaces/IGhoDirectMinter.sol";
 
 /**
- * @title GHODirectMinter
+ * @title GhoDirectMinter
  * @notice The GHODirectMinter is a GHO facilitator, that can inject(mint) and remove(burn) GHO from an AAVE pool that has GHO listed as a non-custom AToken.
  * @author BGD Labs @bgdlabs
  */
-contract GHODirectMinter is Initializable, OwnableUpgradeable, IGHODirectMinter, RiskCouncilControlled {
+contract GhoDirectMinter is Initializable, UpgradeableOwnableWithGuardian, IGhoDirectMinter {
+  using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
   using SafeERC20 for IERC20;
 
   // @inheritdoc IGHODirectMinter
   IPool public immutable POOL;
+  // @inheritdoc IGHODirectMinter
+  IPoolConfigurator public immutable POOL_CONFIGURATOR;
   // @inheritdoc IGHODirectMinter
   address public immutable COLLECTOR;
   // @inheritdoc IGHODirectMinter
@@ -27,13 +33,10 @@ contract GHODirectMinter is Initializable, OwnableUpgradeable, IGHODirectMinter,
   // @inheritdoc IGHODirectMinter
   address public immutable GHO_A_TOKEN;
 
-  modifier onlyRiskCouncilOrOwner() {
-    require(RISK_COUNCIL == msg.sender || owner() == msg.sender, InvalidCaller());
-    _;
-  }
-
-  constructor(IPool pool, address collector, address gho, address council) RiskCouncilControlled(council) {
+  constructor(IPoolAddressesProvider poolAddressesProvider, address collector, address gho) {
+    IPool pool = IPool(poolAddressesProvider.getPool());
     POOL = pool;
+    POOL_CONFIGURATOR = IPoolConfigurator(poolAddressesProvider.getPoolConfigurator());
     COLLECTOR = collector;
     GHO = gho;
     DataTypes.ReserveDataLegacy memory reserveData = pool.getReserveData(gho);
@@ -42,19 +45,25 @@ contract GHODirectMinter is Initializable, OwnableUpgradeable, IGHODirectMinter,
     _disableInitializers();
   }
 
-  function initialize(address owner) external virtual initializer {
+  function initialize(address owner, address council) external virtual initializer {
     __Ownable_init(owner);
+    __Ownable_With_Guardian_init(council);
   }
 
   // @inheritdoc IGHODirectMinter
-  function mintAndSupply(uint256 amount) external onlyRiskCouncilOrOwner {
+  function mintAndSupply(uint256 amount) external onlyOwnerOrGuardian {
     IGhoToken(GHO).mint(address(this), amount);
     IERC20(GHO).forceApprove(address(POOL), amount);
+    DataTypes.ReserveConfigurationMap memory configuration = POOL.getConfiguration(GHO);
+    // setting supplycap to zero to disable it
+    POOL_CONFIGURATOR.setSupplyCap(GHO, 0);
     POOL.supply(GHO, amount, address(this), 0);
+    // setting supplycap back the original value
+    POOL_CONFIGURATOR.setSupplyCap(GHO, configuration.getSupplyCap());
   }
 
   // @inheritdoc IGHODirectMinter
-  function withdrawAndBurn(uint256 amount) external onlyRiskCouncilOrOwner {
+  function withdrawAndBurn(uint256 amount) external onlyOwnerOrGuardian {
     uint256 amountWithdrawn = POOL.withdraw(GHO, amount, address(this));
     IGhoToken(GHO).burn(amountWithdrawn);
   }
