@@ -70,8 +70,8 @@ contract GhoDirectMinter is Initializable, UpgradeableOwnableWithGuardian, IGhoD
 
   // @inheritdoc IGHODirectMinter
   function transferExcessToTreasury() external {
-    (, uint256 capacityUtilization) = IGhoToken(GHO).getFacilitatorBucket(address(this));
-    uint256 balanceIncrease = IERC20(GHO_A_TOKEN).balanceOf(address(this)) - capacityUtilization;
-    IERC20(GHO_A_TOKEN).transfer(address(COLLECTOR), balanceIncrease);
+    (, uint256 level) = IGhoToken(GHO).getFacilitatorBucket(address(this));
+    uint256 levelExcess = IERC20(GHO_A_TOKEN).balanceOf(address(this)) - level;
+    IERC20(GHO_A_TOKEN).transfer(address(COLLECTOR), levelExcess);
   }
 }
