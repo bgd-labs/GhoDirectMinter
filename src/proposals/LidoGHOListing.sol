@@ -29,64 +29,22 @@ contract LidoGHOListing is AaveV3PayloadEthereumLido {
   using SafeERC20 for IERC20;
 
   uint128 public constant GHO_MINT_AMOUNT = 10_000_000e18;
-  address public immutable COUNCIL;
+  address public immutable FACILITATOR;
 
-  constructor(address council) {
-    COUNCIL = council;
+  constructor(address facilitator) {
+    FACILITATOR = facilitator;
   }
 
   function _postExecute() internal override {
-    address vaultImpl = address(
-      new GhoDirectMinter(
-        AaveV3EthereumLido.POOL_ADDRESSES_PROVIDER,
-        address(AaveV3EthereumLido.COLLECTOR),
-        AaveV3EthereumAssets.GHO_UNDERLYING
-      )
-    );
-    address vault = ITransparentProxyFactory(MiscEthereum.TRANSPARENT_PROXY_FACTORY).create(
-      vaultImpl,
-      ProxyAdmin(MiscEthereum.PROXY_ADMIN),
-      abi.encodeWithSelector(GhoDirectMinter.initialize.selector, address(this), COUNCIL)
-    );
     IAccessControl(address(AaveV3EthereumLido.ACL_MANAGER)).grantRole(
-      AaveV3EthereumLido.ACL_MANAGER.RISK_ADMIN_ROLE(), address(vault)
+      AaveV3EthereumLido.ACL_MANAGER.RISK_ADMIN_ROLE(), address(FACILITATOR)
     );
-    IGhoToken(AaveV3EthereumAssets.GHO_UNDERLYING).addFacilitator(vault, "LidoGhoDirectMinter", GHO_MINT_AMOUNT);
-    GhoDirectMinter(vault).mintAndSupply(GHO_MINT_AMOUNT);
+    IGhoToken(AaveV3EthereumAssets.GHO_UNDERLYING).addFacilitator(FACILITATOR, "LidoGhoDirectMinter", GHO_MINT_AMOUNT);
+    GhoDirectMinter(FACILITATOR).mintAndSupply(GHO_MINT_AMOUNT);
 
     // allow risk council to control the bucket capacity
     address[] memory vaults = new address[](1);
-    vaults[0] = vault;
+    vaults[0] = FACILITATOR;
     IGhoBucketSteward(0x46Aa1063e5265b43663E81329333B47c517A5409).setControlledFacilitator(vaults, true);
-  }
-
-  function newListings() public pure override returns (IAaveV3ConfigEngine.Listing[] memory) {
-    IAaveV3ConfigEngine.Listing[] memory listings = new IAaveV3ConfigEngine.Listing[](1);
-
-    listings[0] = IAaveV3ConfigEngine.Listing({
-      asset: AaveV3EthereumAssets.GHO_UNDERLYING,
-      assetSymbol: "GHO",
-      priceFeed: AaveV3EthereumAssets.GHO_ORACLE,
-      enabledToBorrow: EngineFlags.ENABLED,
-      borrowableInIsolation: EngineFlags.DISABLED,
-      withSiloedBorrowing: EngineFlags.DISABLED,
-      flashloanable: EngineFlags.ENABLED,
-      ltv: 0,
-      liqThreshold: 0,
-      liqBonus: 0,
-      reserveFactor: 10_00,
-      supplyCap: 20_000_000,
-      borrowCap: 2_500_000,
-      debtCeiling: 0,
-      liqProtocolFee: 20_00,
-      rateStrategyParams: IAaveV3ConfigEngine.InterestRateInputData({
-        optimalUsageRatio: 92_00,
-        baseVariableBorrowRate: 4_50,
-        variableRateSlope1: 3_00,
-        variableRateSlope2: 50_00
-      })
-    });
-
-    return listings;
   }
 }
