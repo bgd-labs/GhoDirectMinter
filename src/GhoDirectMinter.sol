@@ -6,8 +6,8 @@ import {IPoolAddressesProvider} from "aave-v3-origin/contracts/interfaces/IPoolA
 import {IPoolConfigurator} from "aave-v3-origin/contracts/interfaces/IPoolConfigurator.sol";
 import {ReserveConfiguration} from "aave-v3-origin/contracts/protocol/libraries/configuration/ReserveConfiguration.sol";
 import {Initializable} from "openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol";
-import {IERC20} from "solidity-utils/contracts/oz-common/interfaces/IERC20.sol";
-import {SafeERC20} from "solidity-utils/contracts/oz-common/SafeERC20.sol";
+import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import {UpgradeableOwnableWithGuardian} from
   "solidity-utils/contracts/access-control/UpgradeableOwnableWithGuardian.sol";
 import {IGhoToken} from "./interfaces/IGhoToken.sol";
@@ -46,8 +46,7 @@ contract GhoDirectMinter is Initializable, UpgradeableOwnableWithGuardian, IGhoD
   }
 
   function initialize(address owner, address council) external virtual initializer {
-    __Ownable_init(owner);
-    __Ownable_With_Guardian_init(council);
+    __Ownable_With_Guardian_init(owner, council);
   }
 
   // @inheritdoc IGHODirectMinter

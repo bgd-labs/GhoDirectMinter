@@ -7,12 +7,10 @@ import {MiscEthereum} from "aave-address-book/MiscEthereum.sol";
 import {AaveV3PayloadEthereumLido} from "aave-helpers/src/v3-config-engine/AaveV3PayloadEthereumLido.sol";
 import {EngineFlags} from "aave-v3-origin/contracts/extensions/v3-config-engine/EngineFlags.sol";
 import {IAaveV3ConfigEngine} from "aave-v3-origin/contracts/extensions/v3-config-engine/IAaveV3ConfigEngine.sol";
-import {IERC20} from "solidity-utils/contracts/oz-common/interfaces/IERC20.sol";
-import {SafeERC20} from "solidity-utils/contracts/oz-common/SafeERC20.sol";
-import {
-  ITransparentProxyFactory,
-  ProxyAdmin
-} from "solidity-utils/contracts/transparent-proxy/interfaces/ITransparentProxyFactory.sol";
+import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
+import {ITransparentProxyFactory} from
+  "solidity-utils/contracts/transparent-proxy/interfaces/ITransparentProxyFactory.sol";
 import {IAccessControl} from "openzeppelin-contracts/contracts/access/IAccessControl.sol";
 
 import {IGhoToken} from "../interfaces/IGhoToken.sol";
