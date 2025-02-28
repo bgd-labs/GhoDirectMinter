@@ -6,13 +6,13 @@ import {MiscEthereum} from "aave-address-book/MiscEthereum.sol";
 import {AaveV3EthereumAssets} from "aave-address-book/AaveV3Ethereum.sol";
 import {AaveV3EthereumLido} from "aave-address-book/AaveV3EthereumLido.sol";
 import {GovernanceV3Ethereum} from "aave-address-book/GovernanceV3Ethereum.sol";
-import {IERC20} from "solidity-utils/contracts/oz-common/interfaces/IERC20.sol";
+import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import {ITransparentProxyFactory} from
+  "solidity-utils/contracts/transparent-proxy/interfaces/ITransparentProxyFactory.sol";
 import {
-  ITransparentProxyFactory,
-  ProxyAdmin
-} from "solidity-utils/contracts/transparent-proxy/interfaces/ITransparentProxyFactory.sol";
-import {UpgradeableOwnableWithGuardian} from
-  "solidity-utils/contracts/access-control/UpgradeableOwnableWithGuardian.sol";
+  UpgradeableOwnableWithGuardian,
+  IWithGuardian
+} from "solidity-utils/contracts/access-control/UpgradeableOwnableWithGuardian.sol";
 import {GovV3Helpers} from "aave-helpers/src/GovV3Helpers.sol";
 import {IPool, DataTypes} from "aave-v3-origin/contracts/interfaces/IPool.sol";
 import {ReserveConfiguration} from "aave-v3-origin/contracts/protocol/libraries/configuration/ReserveConfiguration.sol";
@@ -68,9 +68,7 @@ contract Lido_GHODirectMinter_Test is Test {
   }
 
   function test_mintAndSupply_rando() external {
-    vm.expectRevert(
-      abi.encodeWithSelector(UpgradeableOwnableWithGuardian.OnlyGuardianOrOwnerInvalidCaller.selector, address(this))
-    );
+    vm.expectRevert(abi.encodeWithSelector(IWithGuardian.OnlyGuardianOrOwnerInvalidCaller.selector, address(this)));
     minter.mintAndSupply(100);
   }
 
@@ -83,9 +81,7 @@ contract Lido_GHODirectMinter_Test is Test {
   }
 
   function test_withdrawAndBurn_rando() external {
-    vm.expectRevert(
-      abi.encodeWithSelector(UpgradeableOwnableWithGuardian.OnlyGuardianOrOwnerInvalidCaller.selector, address(this))
-    );
+    vm.expectRevert(abi.encodeWithSelector(IWithGuardian.OnlyGuardianOrOwnerInvalidCaller.selector, address(this)));
     minter.withdrawAndBurn(100);
   }
 
