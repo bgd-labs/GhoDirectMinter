@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-interface IGhoToken {
+import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import {IAccessControl} from "openzeppelin-contracts/contracts/access/IAccessControl.sol";
+
+interface IGhoToken is IERC20, IAccessControl {
   struct Facilitator {
     uint128 bucketCapacity;
     uint128 bucketLevel;
@@ -15,14 +18,10 @@ interface IGhoToken {
   function FACILITATOR_MANAGER_ROLE() external pure returns (bytes32);
 
   /**
-   * @notice Add the facilitator passed with the parameters to the facilitators list.
-   * @dev Only accounts with `FACILITATOR_MANAGER_ROLE` role can call this function
-   * @param facilitatorAddress The address of the facilitator to add
-   * @param facilitatorLabel A human readable identifier for the facilitator
-   * @param bucketCapacity The upward limit of GHO can be minted by the facilitator
+   * @notice Returns the identifier of the Bucket Manager Role
+   * @return The bytes32 id hash of the BucketManager role
    */
-  function addFacilitator(address facilitatorAddress, string calldata facilitatorLabel, uint128 bucketCapacity)
-    external;
+  function BUCKET_MANAGER_ROLE() external pure returns (bytes32);
 
   /**
    * @notice Mints the requested amount of tokens to the account address.
@@ -41,7 +40,22 @@ interface IGhoToken {
    */
   function burn(uint256 amount) external;
 
-  function balanceOf(address user) external returns (uint256);
+  /**
+   * @notice Add the facilitator passed with the parameters to the facilitators list.
+   * @dev Only accounts with `FACILITATOR_MANAGER_ROLE` role can call this function
+   * @param facilitatorAddress The address of the facilitator to add
+   * @param facilitatorLabel A human readable identifier for the facilitator
+   * @param bucketCapacity The upward limit of GHO can be minted by the facilitator
+   */
+  function addFacilitator(address facilitatorAddress, string calldata facilitatorLabel, uint128 bucketCapacity)
+    external;
+
+  /**
+   * @notice Remove the facilitator from the facilitators list.
+   * @dev Only accounts with `FACILITATOR_MANAGER_ROLE` role can call this function
+   * @param facilitatorAddress The address of the facilitator to remove
+   */
+  function removeFacilitator(address facilitatorAddress) external;
 
   /**
    * @notice Set the bucket capacity of the facilitator.
@@ -71,38 +85,4 @@ interface IGhoToken {
    * @return The list of the facilitators addresses
    */
   function getFacilitatorsList() external view returns (address[] memory);
-
-  /**
-   * @notice Returns the identifier of the Bucket Manager Role
-   * @return The bytes32 id hash of the BucketManager role
-   */
-  function BUCKET_MANAGER_ROLE() external view returns (bytes32);
-
-  /**
-   * @dev Grants `role` to `account`.
-   *
-   * If `account` had not been already granted `role`, emits a {RoleGranted}
-   * event.
-   *
-   * Requirements:
-   *
-   * - the caller must have ``role``'s admin role.
-   */
-  function grantRole(bytes32 role, address account) external;
-
-  /**
-   * @dev Returns `true` if `account` has been granted `role`.
-   */
-  function hasRole(bytes32 role, address account) external view returns (bool);
-
-  /**
-   * @dev Revokes `role` from `account`.
-   *
-   * If `account` had been granted `role`, emits a {RoleRevoked} event.
-   *
-   * Requirements:
-   *
-   * - the caller must have ``role``'s admin role.
-   */
-  function revokeRole(bytes32 role, address account) external;
 }
