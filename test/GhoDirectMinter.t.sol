@@ -93,6 +93,8 @@ contract GHODirectMinter_Test is Test {
     deal(AaveV3EthereumAssets.wstETH_UNDERLYING, address(this), 1_000 ether);
     IERC20(AaveV3EthereumAssets.wstETH_UNDERLYING).approve(address(AaveV3EthereumLido.POOL), 1_000 ether);
     AaveV3EthereumLido.POOL.deposit(AaveV3EthereumAssets.wstETH_UNDERLYING, 1_000 ether, address(this), 0);
+    vm.prank(owner);
+    AaveV3EthereumLido.POOL_CONFIGURATOR.setBorrowCap(AaveV3EthereumAssets.GHO_UNDERLYING, 0);
     AaveV3EthereumLido.POOL.borrow(AaveV3EthereumAssets.GHO_UNDERLYING, amount, 2, 0, address(this));
 
     // generate some yield
@@ -100,7 +102,9 @@ contract GHODirectMinter_Test is Test {
 
     uint256 collectorBalanceBeforeTransfer = ghoAToken.balanceOf(address(minter.COLLECTOR()));
     uint256 balanceBeforeTransfer = ghoAToken.balanceOf(address(minter));
-    assertGt(balanceBeforeTransfer, amount);
+    // is equal on core due to rf 100%
+    // is gt on lido due to ef < 100%
+    assertGe(balanceBeforeTransfer, amount);
     minter.transferExcessToTreasury();
     assertApproxEqAbs(ghoAToken.balanceOf(address(minter)), amount, 1);
     assertApproxEqAbs(
