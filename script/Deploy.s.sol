@@ -44,30 +44,8 @@ library DeploymentLibrary {
         )
       );
   }
-
-  // function _deployLido() internal returns (address) {
-  //   // its the council used on other GHO stewards
-  //   // might make sense to have on address book
-  //   address council = 0x8513e6F37dBc52De87b166980Fa3F50639694B60;
-  //   return _deployFacilitator(
-  //     //ITransparentProxyFactory(MiscEthereum.TRANSPARENT_PROXY_FACTORY),
-  //     // using an old TRANSPARENT_PROXY_FACTORY, it was replaced in a new version of aave-address-book
-  //     ITransparentProxyFactory(0x9FB3B12248bf010AEA7cE08343C8499FFAB4770f),
-  //     MiscEthereum.PROXY_ADMIN,
-  //     AaveV3EthereumLido.POOL_ADDRESSES_PROVIDER,
-  //     address(AaveV3EthereumLido.COLLECTOR),
-  //     IGhoToken(AaveV3EthereumAssets.GHO_UNDERLYING),
-  //     council
-  //   );
-  // }
 }
 
-// contract DeployLido is EthereumScript {
-//   function run() external broadcast {
-//     DeploymentLibrary._deployLido();
-//   }
-// }
-//
 contract DeployCore is EthereumScript {
   function run() external broadcast {
     DeploymentLibrary._deployCore();
