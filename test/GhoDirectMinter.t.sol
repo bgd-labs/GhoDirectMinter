@@ -7,8 +7,9 @@ import {AaveV3Ethereum, AaveV3EthereumAssets, IACLManager} from "aave-address-bo
 import {AaveV3EthereumLido} from "aave-address-book/AaveV3EthereumLido.sol";
 import {GovernanceV3Ethereum} from "aave-address-book/GovernanceV3Ethereum.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import {ITransparentProxyFactory} from
-  "solidity-utils/contracts/transparent-proxy/interfaces/ITransparentProxyFactory.sol";
+import {
+  ITransparentProxyFactory
+} from "solidity-utils/contracts/transparent-proxy/interfaces/ITransparentProxyFactory.sol";
 import {
   UpgradeableOwnableWithGuardian,
   IWithGuardian
@@ -48,16 +49,15 @@ contract GHODirectMinter_Test is Test {
     ghoAToken = IERC20(minter.GHO_A_TOKEN());
 
     // burn all supply to start with a clean state on the tests
-    uint256 totalATokenSupply = ghoAToken.totalSupply();
     assertEq(ghoAToken.balanceOf(address(minter)), 0);
     vm.stopPrank();
   }
 
-  function getPool() internal view returns (IPool) {
+  function getPool() internal pure returns (IPool) {
     return AaveV3Ethereum.POOL;
   }
 
-  function getACL() internal view returns (IACLManager) {
+  function getACL() internal pure returns (IACLManager) {
     return AaveV3Ethereum.ACL_MANAGER;
   }
 
