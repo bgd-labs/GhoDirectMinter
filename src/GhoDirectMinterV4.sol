@@ -1,19 +1,18 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.0;
 
-import {Initializable} from "openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol";
-import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import {SafeERC20} from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import {
   UpgradeableOwnableWithGuardian
 } from "solidity-utils/contracts/access-control/UpgradeableOwnableWithGuardian.sol";
-import {IGhoToken} from "./interfaces/IGhoToken.sol";
-import {IGhoDirectMinterV4} from "./interfaces/IGhoDirectMinterV4.sol";
+import {Initializable} from "openzeppelin-contracts-upgradeable/contracts/proxy/utils/Initializable.sol";
+import {SafeERC20, IERC20} from "openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IHub} from "aave-v4/hub/interfaces/IHub.sol";
+import {IGhoDirectMinterV4} from "src/interfaces/IGhoDirectMinterV4.sol";
+import {IGhoToken} from "src/interfaces/IGhoToken.sol";
 
 /// @title GhoDirectMinterV4
 /// @author Aave Labs
-/// @notice A GHO facilitator that injects (mints) and removes (burns) GHO from an Aave v4 Hub.
+/// @notice A GHO facilitator that injects (mints) and removes (burns) GHO from an Aave V4 Hub.
 /// @dev The GhoDirectMinterV4 is expected to be registered as a spoke on the Hub with infinite addCap.
 contract GhoDirectMinterV4 is Initializable, UpgradeableOwnableWithGuardian, IGhoDirectMinterV4 {
   IGhoToken internal immutable GHO;
@@ -24,10 +23,10 @@ contract GhoDirectMinterV4 is Initializable, UpgradeableOwnableWithGuardian, IGh
   /// @param hub_ The address of the Aave v4 Hub.
   /// @param gho_ The address of the GHO token.
   constructor(address hub_, address gho_) {
+    _disableInitializers();
     HUB = IHub(hub_);
     ASSET_ID = HUB.getAssetId(gho_); // reverts on invalid `underlying`
     GHO = IGhoToken(gho_);
-    _disableInitializers();
   }
 
   /// @inheritdoc IGhoDirectMinterV4

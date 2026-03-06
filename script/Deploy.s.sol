@@ -7,9 +7,9 @@ import {ICollector} from "aave-v3-origin/contracts/treasury/ICollector.sol";
 import {
   ITransparentProxyFactory
 } from "solidity-utils/contracts/transparent-proxy/interfaces/ITransparentProxyFactory.sol";
-import {GhoDirectMinter} from "../src/GhoDirectMinter.sol";
-import {GhoDirectMinterV4} from "../src/GhoDirectMinterV4.sol";
-import {IGhoToken} from "../src/interfaces/IGhoToken.sol";
+import {GhoDirectMinter} from "src/GhoDirectMinter.sol";
+import {GhoDirectMinterV4} from "src/GhoDirectMinterV4.sol";
+import {IGhoToken} from "src/interfaces/IGhoToken.sol";
 
 import {AaveV3Ethereum, AaveV3EthereumAssets} from "aave-address-book/AaveV3Ethereum.sol";
 import {AaveV3EthereumLido} from "aave-address-book/AaveV3EthereumLido.sol";

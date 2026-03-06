@@ -89,7 +89,7 @@ contract GHODirectMinterV4_Test is Test {
     _withdrawAndBurn(supplyAmount, withdrawAmount, council);
   }
 
-  function test_withdrawAndBurn_rando() external {
+  function test_withdrawAndBurn_revertsWith_InvalidCaller() external {
     vm.expectRevert(abi.encodeWithSelector(IWithGuardian.OnlyGuardianOrOwnerInvalidCaller.selector, address(this)));
     minter.withdrawAndBurn(100);
   }
